@@ -14,7 +14,7 @@ const (
 	aggregate3MethodName string = "aggregate3"
 )
 
-func (c *Clients) aggregatedCalls(ctx context.Context, calls []multicall3.Multicall3Call3) ([]multicall3.Multicall3Result, error) {
+func (c *Clients) AggregatedCalls(ctx context.Context, calls []multicall3.Multicall3Call3) ([]multicall3.Multicall3Result, error) {
 	cli := c.Client()
 	if cli == nil {
 		return nil, fmt.Errorf("no client available")
