@@ -14,7 +14,7 @@ import (
 	nftmanager "github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/uniswapv3_nft_position_manager"
 )
 
-func (c *Clients) getAccountHoldings(ctx context.Context, accountAddress string) ([]*big.Int, error) {
+func (c *Clients) GetAccountHoldings(ctx context.Context, accountAddress string) ([]*big.Int, error) {
 	cli := c.Client()
 	if cli == nil {
 		return nil, fmt.Errorf("no client available")
@@ -37,10 +37,10 @@ func (c *Clients) getAccountHoldings(ctx context.Context, accountAddress string)
 	if err != nil {
 		return nil, err
 	}
-	return c.filterAccountHoldings(ctx, logs, accountAddress)
+	return c.FilterAccountHoldings(ctx, logs, accountAddress)
 }
 
-func (c *Clients) filterAccountHoldings(ctx context.Context, logs []types.Log, accountAddress string) ([]*big.Int, error) {
+func (c *Clients) FilterAccountHoldings(ctx context.Context, logs []types.Log, accountAddress string) ([]*big.Int, error) {
 	calls := make([]multicall3.Multicall3Call3, 0)
 	tokenIDs := make([]*big.Int, 0)
 
@@ -64,7 +64,7 @@ func (c *Clients) filterAccountHoldings(ctx context.Context, logs []types.Log, a
 		tokenIDs = append(tokenIDs, transferEvent.TokenId)
 	}
 
-	callResults, err := c.aggregatedCalls(ctx, calls)
+	callResults, err := c.AggregatedCalls(ctx, calls)
 	if err != nil {
 		return nil, err
 	}
