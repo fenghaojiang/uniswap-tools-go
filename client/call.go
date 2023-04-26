@@ -10,17 +10,13 @@ import (
 	"github.com/samber/lo"
 )
 
-const (
-	aggregate3MethodName string = "aggregate3"
-)
-
-func (c *Clients) AggregatedCalls(ctx context.Context, calls []multicall3.Multicall3Call3) ([]multicall3.Multicall3Result, error) {
+func (c *Clients) aggregatedCalls(ctx context.Context, calls []multicall3.Multicall3Call3) ([]multicall3.Multicall3Result, error) {
 	cli := c.Client()
 	if cli == nil {
 		return nil, fmt.Errorf("no client available")
 	}
 
-	calldata, err := c.contractAbis.Multicall.Pack(aggregate3MethodName, calls)
+	calldata, err := c.contractAbis.Multicall.Pack(constants.Aggregate3Method, calls)
 	if err != nil {
 		return nil, err
 	}
@@ -30,13 +26,13 @@ func (c *Clients) AggregatedCalls(ctx context.Context, calls []multicall3.Multic
 		Data: calldata,
 	}
 
-	res, err := cli.CallContract(ctx, callMsg, nil)
+	res, err := cli.ETHClient().CallContract(ctx, callMsg, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var results []multicall3.Multicall3Result
-	if err := c.contractAbis.Multicall.UnpackIntoInterface(&results, aggregate3MethodName, res); err != nil {
+	if err := c.contractAbis.Multicall.UnpackIntoInterface(&results, constants.Aggregate3Method, res); err != nil {
 		return nil, err
 	}
 

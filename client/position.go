@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/fenghaojiang/uniswap-tools-go/constants"
@@ -15,32 +14,25 @@ import (
 )
 
 func (c *Clients) GetAccountHoldings(ctx context.Context, accountAddress string) ([]*big.Int, error) {
+	logs, err := c.getErigonLatestLogs(ctx, accountAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.filterAccountHoldings(ctx, logs, accountAddress)
+}
+
+func (c *Clients) getErigonLatestLogs(ctx context.Context, accountAddress string) ([]types.Log, error) {
 	cli := c.Client()
 	if cli == nil {
 		return nil, fmt.Errorf("no client available")
 	}
 
-	logs, err := cli.FilterLogs(ctx, ethereum.FilterQuery{
-		Addresses: []common.Address{
-			constants.UniswapV3NFTPositionManagerAddress(),
-		},
-		Topics: [][]common.Hash{
-			{
-				constants.ERC721TransferHash(),
-			},
-			{},
-			{
-				common.HexToHash(accountAddress),
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return c.FilterAccountHoldings(ctx, logs, accountAddress)
+	// TODO erigon_getLatestLogs
+	return nil, nil
 }
 
-func (c *Clients) FilterAccountHoldings(ctx context.Context, logs []types.Log, accountAddress string) ([]*big.Int, error) {
+func (c *Clients) filterAccountHoldings(ctx context.Context, logs []types.Log, accountAddress string) ([]*big.Int, error) {
 	calls := make([]multicall3.Multicall3Call3, 0)
 	tokenIDs := make([]*big.Int, 0)
 
@@ -64,7 +56,7 @@ func (c *Clients) FilterAccountHoldings(ctx context.Context, logs []types.Log, a
 		tokenIDs = append(tokenIDs, transferEvent.TokenId)
 	}
 
-	callResults, err := c.AggregatedCalls(ctx, calls)
+	callResults, err := c.aggregatedCalls(ctx, calls)
 	if err != nil {
 		return nil, err
 	}

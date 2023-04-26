@@ -1,7 +1,9 @@
 
 # uniswap-tools-go  
 
-## Goals 
+
+
+## Goals  
 
 `uniswap-tools-go` aims to provide you a neat multi-chain solution for checking your holding positions and profit in `uniswap-v3`. You can request for anyone's uniswap-v3's portfolio using this toolkit in `Ethereum / Polygon / Arbitrum / Optimism`.  
 
@@ -9,6 +11,12 @@
 
 This project does not make money for you. It does not contain any logic that predict or something relevant to trading. 
 
+
+## Requirements
+- Go Version: 1.19+
+- Node Service: [Erigon](https://github.com/ledgerwatch/erigon)  
+
+Notice: [Ankr](https://ankr.com/) provides you node service with Erigon Nodes
 
 ## Get Start
 
