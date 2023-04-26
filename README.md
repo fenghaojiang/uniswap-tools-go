@@ -14,9 +14,6 @@ This project does not make money for you. It does not contain any logic that pre
 
 ## Requirements
 - Go Version: 1.19+
-- Node Service: [Erigon](https://github.com/ledgerwatch/erigon)  
-
-Notice: [Ankr](https://ankr.com/) provides you node service with Erigon Nodes
 
 ## Get Start
 
