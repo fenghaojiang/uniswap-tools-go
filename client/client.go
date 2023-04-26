@@ -5,29 +5,55 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 type Clients struct {
-	ethClients   []*ethclient.Client
+	ethClients []*wrapClient
+	// limit concurrency of rpc calls
+	limitChan chan struct{}
+
 	contractAbis *ContractABIs
 }
 
+type wrapClient struct {
+	client    *rpc.Client
+	ethclient *ethclient.Client
+}
+
+func (w *wrapClient) RPCClient() *rpc.Client {
+	return w.client
+}
+
+func (w *wrapClient) ETHClient() *ethclient.Client {
+	return w.ethclient
+}
+
 func NewClientsWithEndpoints(endpoints []string) (*Clients, error) {
-	ethClients := make([]*ethclient.Client, 0)
+	ethClients := make([]*wrapClient, 0)
 	for _, endpoint := range endpoints {
+		callClient, err := rpc.Dial(endpoint)
+		if err != nil {
+			return nil, err
+		}
+
 		ethClient, err := ethclient.Dial(endpoint)
 		if err != nil {
 			return nil, err
 		}
-		ethClients = append(ethClients, ethClient)
+		ethClients = append(ethClients, &wrapClient{
+			client:    callClient,
+			ethclient: ethClient,
+		})
 	}
 	return &Clients{
 		ethClients:   ethClients,
+		limitChan:    make(chan struct{}, 1000),
 		contractAbis: NewContractAbis(),
 	}, nil
 }
 
-func (c *Clients) Client() *ethclient.Client {
+func (c *Clients) Client() *wrapClient {
 	if len(c.ethClients) == 0 {
 		return nil
 	}
