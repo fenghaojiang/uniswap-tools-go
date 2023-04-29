@@ -48,9 +48,13 @@ func NewClientsWithEndpoints(endpoints []string) (*Clients, error) {
 	}
 	return &Clients{
 		ethClients:   ethClients,
-		limitChan:    make(chan struct{}, 1000),
+		limitChan:    make(chan struct{}, 10),
 		contractAbis: NewContractAbis(),
 	}, nil
+}
+
+func (c *Clients) WithLimitRPC(limit int) {
+	c.limitChan = make(chan struct{}, limit)
 }
 
 func (c *Clients) Client() *wrapClient {
