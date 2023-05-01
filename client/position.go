@@ -31,7 +31,7 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 		calls = append(calls, call)
 	}
 
-	results, err := c.aggregatedCalls(ctx, calls)
+	results, err := c.AggregatedCalls(ctx, calls)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 			defer func() {
 				<-c.limitChan
 			}()
-			token0, err = c.ERC20Token(ctx, _p.Token0)
+			token0, err = c.AggregatedERC20Token(ctx, _p.Token0)
 			if err != nil {
 				return err
 			}
@@ -68,7 +68,7 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 			tokenMap[strings.ToLower(_p.Token0.String())] = token0
 			tokenMu.Unlock()
 
-			token1, err = c.ERC20Token(ctx, _p.Token1)
+			token1, err = c.AggregatedERC20Token(ctx, _p.Token1)
 			if err != nil {
 				return err
 			}
