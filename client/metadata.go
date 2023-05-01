@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/erc20"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/multicall3"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/uniswapv3_factory"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/uniswapv3_nft_position_manager"
@@ -15,6 +16,7 @@ type ContractABIs struct {
 	Router             *abi.ABI
 	NftPositionManager *abi.ABI
 	Multicall          *abi.ABI
+	ERC20              *abi.ABI
 }
 
 func NewContractAbis() *ContractABIs {
@@ -23,6 +25,7 @@ func NewContractAbis() *ContractABIs {
 	router, _ := uniswapv3_router.Uniswapv3RouterMetaData.GetAbi()
 	nftManager, _ := uniswapv3_nft_position_manager.Uniswapv3NftPositionManagerMetaData.GetAbi()
 	multilcall, _ := multicall3.Multicall3MetaData.GetAbi()
+	erc20, _ := erc20.Erc20MetaData.GetAbi()
 
 	return &ContractABIs{
 		Factory:            factory,
@@ -30,5 +33,6 @@ func NewContractAbis() *ContractABIs {
 		Router:             router,
 		NftPositionManager: nftManager,
 		Multicall:          multilcall,
+		ERC20:              erc20,
 	}
 }

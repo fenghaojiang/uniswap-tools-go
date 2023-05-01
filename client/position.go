@@ -3,6 +3,8 @@ package client
 import (
 	"context"
 	"math/big"
+	"strings"
+	"sync"
 
 	"github.com/fenghaojiang/uniswap-tools-go/constants"
 	"github.com/fenghaojiang/uniswap-tools-go/model"
@@ -45,25 +47,41 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 	}
 
 	var eg errgroup.Group
+
+	tokenMap := make(map[string]*model.ERC20Token)
+	var tokenMu sync.Mutex
+
 	for _, position := range positions {
 		c.limitChan <- struct{}{}
 		_p := position
+		var token0, token1 *model.ERC20Token
+		var err error
 		eg.Go(func() error {
 			defer func() {
 				<-c.limitChan
 			}()
-			_, err := c.ERC20Token(ctx, _p.Token0)
+			token0, err = c.ERC20Token(ctx, _p.Token0)
 			if err != nil {
 				return err
 			}
+			tokenMu.Lock()
+			tokenMap[strings.ToLower(_p.Token0.String())] = token0
+			tokenMu.Unlock()
 
-			_, err = c.ERC20Token(ctx, _p.Token1)
+			token1, err = c.ERC20Token(ctx, _p.Token1)
 			if err != nil {
 				return err
 			}
+			tokenMu.Lock()
+			tokenMap[strings.ToLower(_p.Token1.String())] = token1
+			tokenMu.Unlock()
 			return nil
 		})
+	}
 
+	err = eg.Wait()
+	if err != nil {
+		return nil, err
 	}
 
 	return nil, nil
