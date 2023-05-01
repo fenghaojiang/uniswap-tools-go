@@ -3,15 +3,15 @@ package client
 import (
 	"context"
 	"fmt"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/fenghaojiang/uniswap-tools-go/constants"
 	"github.com/fenghaojiang/uniswap-tools-go/model"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/multicall3"
+	"math/big"
 )
 
-func (c *Clients) ERC20Token(ctx context.Context, address common.Address) (*model.ERC20Token, error) {
+func (c *Clients) AggregatedERC20Token(ctx context.Context, address common.Address) (*model.ERC20Token, error) {
 	calls := make([]multicall3.Multicall3Call3, 0)
 
 	var err error
@@ -47,7 +47,7 @@ func (c *Clients) ERC20Token(ctx context.Context, address common.Address) (*mode
 	}
 	calls = append(calls, decimalsCall)
 
-	results, err := c.aggregatedCalls(ctx, calls)
+	results, err := c.AggregatedCalls(ctx, calls)
 	if err != nil {
 		return nil, err
 	}
@@ -86,4 +86,50 @@ func (c *Clients) ERC20Token(ctx context.Context, address common.Address) (*mode
 		Decimals:        decimals,
 		Symbol:          symbol,
 	}, nil
+}
+
+func (c *Clients) ERC20Symbol(ctx context.Context, address common.Address) (string, error) {
+	_calldata, err := c.contractAbis.ERC20.Pack(constants.SymbolMethod)
+	if err != nil {
+		return "", err
+	}
+
+	data, err := c.Call(ctx, model.CallContractParam{
+		To:       address.String(),
+		CallData: hexutil.Encode(_calldata),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	var symbol string
+	err = c.contractAbis.ERC20.UnpackIntoInterface(&symbol, constants.SymbolMethod, data)
+	if err != nil {
+		return "", err
+	}
+
+	return symbol, nil
+}
+
+func (c *Clients) ERC20TotalSupply(ctx context.Context, address common.Address) (*big.Int, error) {
+	_calldata, err := c.contractAbis.ERC20.Pack(constants.TotalSupplyMethod)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := c.Call(ctx, model.CallContractParam{
+		To:       address.String(),
+		CallData: hexutil.Encode(_calldata),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	totalSupply := new(big.Int)
+	err = c.contractAbis.ERC20.UnpackIntoInterface(&totalSupply, constants.TotalSupplyMethod, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return totalSupply, nil
 }

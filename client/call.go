@@ -5,12 +5,14 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/fenghaojiang/uniswap-tools-go/constants"
+	"github.com/fenghaojiang/uniswap-tools-go/model"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/multicall3"
 	"github.com/samber/lo"
 )
 
-func (c *Clients) aggregatedCalls(ctx context.Context, calls []multicall3.Multicall3Call3) ([]multicall3.Multicall3Result, error) {
+func (c *Clients) AggregatedCalls(ctx context.Context, calls []multicall3.Multicall3Call3) ([]multicall3.Multicall3Result, error) {
 	cli := c.Client()
 	if cli == nil {
 		return nil, fmt.Errorf("no client available")
@@ -37,4 +39,24 @@ func (c *Clients) aggregatedCalls(ctx context.Context, calls []multicall3.Multic
 	}
 
 	return results, nil
+}
+
+func (c *Clients) Call(ctx context.Context, callParam model.CallContractParam) ([]byte, error) {
+	cli := c.Client()
+	if cli == nil {
+		return nil, fmt.Errorf("no available client")
+	}
+
+	var _res string
+	err := cli.RPCClient().CallContext(ctx, &_res, "eth_call", callParam, "latest")
+	if err != nil {
+		return nil, err
+	}
+
+	decodeRes, err := hexutil.Decode(_res)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRes, nil
 }
