@@ -20,4 +20,5 @@ const (
 	SymbolMethod      = "symbol"
 	TotalSupplyMethod = "totalSupply"
 	DecimalsMethod    = "decimals"
+	BalanceOfMethod   = "balanceOf"
 )
