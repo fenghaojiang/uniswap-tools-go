@@ -50,4 +50,23 @@ func TestOnERC20Token(t *testing.T) {
 
 		fmt.Println(totalSupply)
 	})
+
+	t.Run("run on erc20 decimals", func(t *testing.T) {
+		decimals, err := clis.ERC20Decimals(ctx, usdtAddress)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		assert.Equal(t, uint8(6), decimals)
+	})
+
+	t.Run("run on erc20 balance of", func(t *testing.T) {
+		balance, err := clis.ERC20Balance(ctx, usdtAddress, common.HexToAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045"))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		fmt.Println(balance.String())
+	})
+
 }
