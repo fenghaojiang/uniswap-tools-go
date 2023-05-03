@@ -2,6 +2,11 @@ package constants
 
 // NFT Position Method
 const (
+	NFTPositionManagerPositionsMethod = "positions"
+)
+
+// Aggregated3 method
+const (
 	Aggregate3Method = "aggregate3"
 )
 
