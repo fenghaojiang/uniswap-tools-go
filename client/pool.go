@@ -10,41 +10,64 @@ import (
 	"github.com/fenghaojiang/uniswap-tools-go/constants"
 	"github.com/fenghaojiang/uniswap-tools-go/model"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/multicall3"
-	"github.com/samber/lo"
 )
 
-func (c *Clients) UniswapV3GetPool(ctx context.Context, token0 common.Address, token1 common.Address, feeLevel *big.Int) (*common.Address, error) {
-	_calldata, err := c.contractAbis.Factory.Pack(constants.GetPoolMethod, token0, token1, feeLevel)
+func (c *Clients) FeeGrowthGlobal0X128(ctx context.Context, address common.Address) (*big.Int, error) {
+	_calldata, err := c.contractAbis.Pool.Pack(constants.FeeGrowthGlobal0X128Method)
 	if err != nil {
 		return nil, err
 	}
 
 	data, err := c.Call(ctx, model.CallContractParam{
-		To:       constants.UniswapV3FacotryAddress().String(),
+		To:       address.String(),
 		CallData: hexutil.Encode(_calldata),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	var pool common.Address
-	err = c.contractAbis.Factory.UnpackIntoInterface(&pool, constants.GetPoolMethod, data)
+	var res *big.Int
+	err = c.contractAbis.Pool.UnpackIntoInterface(&res, constants.FeeGrowthGlobal0X128Method, data)
 	if err != nil {
 		return nil, err
 	}
 
-	return lo.ToPtr[common.Address](pool), nil
+	return res, nil
 }
 
-func (c *Clients) AggregatedGetPools(ctx context.Context, getPoolsReq []model.Pool) ([]model.Pool, error) {
+func (c *Clients) FeeGrowthGlobal1X128(ctx context.Context, address common.Address) (*big.Int, error) {
+	_calldata, err := c.contractAbis.Pool.Pack(constants.FeeGrowthGlobal1X128Method)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := c.Call(ctx, model.CallContractParam{
+		To:       address.String(),
+		CallData: hexutil.Encode(_calldata),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var res *big.Int
+	err = c.contractAbis.Pool.UnpackIntoInterface(&res, constants.FeeGrowthGlobal1X128Method, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Clients) AggregatedFeeGrowthGlobal0X128(ctx context.Context, addresses []common.Address) ([]*big.Int, error) {
 	_calls := make([]multicall3.Multicall3Call3, 0)
-	for _, pool := range getPoolsReq {
-		_calldata, err := c.contractAbis.Factory.Pack(constants.GetPoolMethod, pool.Token0, pool.Token1, pool.Fee)
+	for _, address := range addresses {
+		_calldata, err := c.contractAbis.Pool.Pack(constants.FeeGrowthGlobal0X128Method)
 		if err != nil {
 			return nil, err
 		}
+
 		_calls = append(_calls, multicall3.Multicall3Call3{
-			Target:       constants.UniswapV3FacotryAddress(),
+			Target:       address,
 			AllowFailure: false,
 			CallData:     _calldata,
 		})
@@ -54,19 +77,57 @@ func (c *Clients) AggregatedGetPools(ctx context.Context, getPoolsReq []model.Po
 	if err != nil {
 		return nil, err
 	}
-	if len(getPoolsReq) != len(results) {
-		return nil, fmt.Errorf("response of call getPool do not match the request")
-	}
-	for i, res := range results {
-		if !res.Success {
-			return nil, fmt.Errorf("failed to handle %d th request, %+v", i, getPoolsReq[i])
+
+	fees := make([]*big.Int, 0)
+	for i, result := range results {
+		if !result.Success {
+			return nil, fmt.Errorf("feeGrowthGlobal0X128 failed on %d th call, contract address: %s", i, addresses[i].String())
 		}
-		var poolAddress common.Address
-		err = c.contractAbis.Factory.UnpackIntoInterface(&poolAddress, constants.GetPoolMethod, res.ReturnData)
+
+		var fee = new(big.Int)
+		err = c.contractAbis.Pool.UnpackIntoInterface(&fee, constants.FeeGrowthGlobal0X128Method, result.ReturnData)
 		if err != nil {
 			return nil, err
 		}
-		getPoolsReq[i].Pool = poolAddress
+		fees = append(fees, fee)
 	}
-	return getPoolsReq, nil
+
+	return fees, nil
+}
+
+func (c *Clients) AggregatedFeeGrowthGlobal1X128(ctx context.Context, addresses []common.Address) ([]*big.Int, error) {
+	_calls := make([]multicall3.Multicall3Call3, 0)
+	for _, address := range addresses {
+		_calldata, err := c.contractAbis.Pool.Pack(constants.FeeGrowthGlobal1X128Method)
+		if err != nil {
+			return nil, err
+		}
+
+		_calls = append(_calls, multicall3.Multicall3Call3{
+			Target:       address,
+			AllowFailure: false,
+			CallData:     _calldata,
+		})
+	}
+
+	results, err := c.AggregatedCalls(ctx, _calls)
+	if err != nil {
+		return nil, err
+	}
+
+	fees := make([]*big.Int, 0)
+	for i, result := range results {
+		if !result.Success {
+			return nil, fmt.Errorf("feeGrowthGlobal0X128 failed on %d th call, contract address: %s", i, addresses[i].String())
+		}
+
+		var fee = new(big.Int)
+		err = c.contractAbis.Pool.UnpackIntoInterface(&fee, constants.FeeGrowthGlobal1X128Method, result.ReturnData)
+		if err != nil {
+			return nil, err
+		}
+		fees = append(fees, fee)
+	}
+
+	return fees, nil
 }
