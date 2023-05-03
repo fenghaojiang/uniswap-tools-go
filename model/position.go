@@ -27,6 +27,9 @@ type Position struct {
 	TokenID *big.Int       `json:"tokenId"`
 	Name    string         `json:"name"`
 
+	PriceRangeInToken0 [2]*decimal.Decimal `json:"priceRangeInToken0"`
+	PriceRangeInToken1 [2]*decimal.Decimal `json:"priceRangeInToken1"`
+
 	Token0 common.Address `json:"token0"`
 	Token1 common.Address `json:"token1"`
 

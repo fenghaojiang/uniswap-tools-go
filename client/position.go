@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Position, error) {
+func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) ([]model.Position, error) {
 	calls := make([]multicall3.Multicall3Call3, 0)
 	for _, tokenID := range tokenIDs {
 		call := multicall3.Multicall3Call3{
@@ -72,6 +72,7 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 			if err != nil {
 				return err
 			}
+
 			tokenMu.Lock()
 			tokenMap[strings.ToLower(_p.Token1.String())] = token1
 			tokenMu.Unlock()

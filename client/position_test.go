@@ -14,7 +14,7 @@ func TestOnAccountHoldings(t *testing.T) {
 		t.Fatal(err)
 	}
 	ctx := context.Background()
-	_, err = clis.Position(ctx, []*big.Int{
+	_, err = clis.AggregatedPosition(ctx, []*big.Int{
 		new(big.Int).SetInt64(100000),
 	})
 	if err != nil {

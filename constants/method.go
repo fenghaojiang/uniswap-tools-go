@@ -27,3 +27,8 @@ const (
 	DecimalsMethod    = "decimals"
 	BalanceOfMethod   = "balanceOf"
 )
+
+// Factory Method
+const (
+	GetPoolMethod = "getPool"
+)
