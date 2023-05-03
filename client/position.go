@@ -12,18 +12,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-const (
-	NFTPositionManagerPositionMethod = "position"
-)
-
-func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Position, error) {
+func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) ([]model.Position, error) {
 	calls := make([]multicall3.Multicall3Call3, 0)
 	for _, tokenID := range tokenIDs {
 		call := multicall3.Multicall3Call3{
 			Target:       constants.UniswapV3NFTPositionManagerAddress(),
 			AllowFailure: false,
 		}
-		callData, err := c.contractAbis.NftPositionManager.Pack(NFTPositionManagerPositionMethod, tokenID)
+		callData, err := c.contractAbis.NftPositionManager.Pack(constants.NFTPositionManagerPositionsMethod, tokenID)
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +36,7 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 
 	for _, result := range results {
 		var position model.NFTPosition
-		if err := c.contractAbis.NftPositionManager.UnpackIntoInterface(&position, NFTPositionManagerPositionMethod, result.ReturnData); err != nil {
+		if err := c.contractAbis.NftPositionManager.UnpackIntoInterface(&position, constants.NFTPositionManagerPositionsMethod, result.ReturnData); err != nil {
 			return nil, err
 		}
 		positions = append(positions, position)
@@ -52,13 +48,17 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 	var tokenMu sync.Mutex
 
 	for _, position := range positions {
-		c.limitChan <- struct{}{}
+		if c.limitChan != nil {
+			c.limitChan <- struct{}{}
+		}
 		_p := position
 		var token0, token1 *model.ERC20Token
 		var err error
 		eg.Go(func() error {
 			defer func() {
-				<-c.limitChan
+				if c.limitChan != nil {
+					<-c.limitChan
+				}
 			}()
 			token0, err = c.AggregatedERC20Token(ctx, _p.Token0)
 			if err != nil {
@@ -72,6 +72,7 @@ func (c *Clients) Position(ctx context.Context, tokenIDs []*big.Int) ([]model.Po
 			if err != nil {
 				return err
 			}
+
 			tokenMu.Lock()
 			tokenMap[strings.ToLower(_p.Token1.String())] = token1
 			tokenMu.Unlock()

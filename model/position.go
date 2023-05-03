@@ -8,24 +8,27 @@ import (
 )
 
 type NFTPosition struct {
-	Nonce                    decimal.Decimal `json:"nonce"`
-	Operator                 common.Address  `json:"operator"`
-	Token0                   common.Address  `json:"token0"`
-	Token1                   common.Address  `json:"token1"`
-	Fee                      int64           `json:"fee"`
-	TickLower                int64           `json:"tickLower"`
-	TickUpper                int64           `json:"tickUpper"`
-	Liquidity                decimal.Decimal `json:"liquidity"`
-	FeeGrowthInside0LastX128 decimal.Decimal `json:"feeGrowthInside0LastX128"`
-	FeeGrowthInside1LastX128 decimal.Decimal `json:"feeGrowthInside1LastX128"`
-	TokensOwed0              decimal.Decimal `json:"tokensOwed0"`
-	TokensOwed1              decimal.Decimal `json:"tokensOwed1"`
+	Nonce                    *big.Int       `json:"nonce"`
+	Operator                 common.Address `json:"operator"`
+	Token0                   common.Address `json:"token0"`
+	Token1                   common.Address `json:"token1"`
+	Fee                      *big.Int       `json:"fee"`
+	TickLower                *big.Int       `json:"tickLower"`
+	TickUpper                *big.Int       `json:"tickUpper"`
+	Liquidity                *big.Int       `json:"liquidity"`
+	FeeGrowthInside0LastX128 *big.Int       `json:"feeGrowthInside0LastX128"`
+	FeeGrowthInside1LastX128 *big.Int       `json:"feeGrowthInside1LastX128"`
+	TokensOwed0              *big.Int       `json:"tokensOwed0"`
+	TokensOwed1              *big.Int       `json:"tokensOwed1"`
 }
 
 type Position struct {
 	Owner   common.Address `json:"owner"`
 	TokenID *big.Int       `json:"tokenId"`
 	Name    string         `json:"name"`
+
+	PriceRangeInToken0 [2]*decimal.Decimal `json:"priceRangeInToken0"`
+	PriceRangeInToken1 [2]*decimal.Decimal `json:"priceRangeInToken1"`
 
 	Token0 common.Address `json:"token0"`
 	Token1 common.Address `json:"token1"`

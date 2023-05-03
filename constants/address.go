@@ -63,3 +63,20 @@ func OneInchPriceOracleAddressEthereum() common.Address {
 func OneInchPriceOracleAddressPolygon() common.Address {
 	return common.HexToAddress(oneInchPriceOralceAddressPolygon)
 }
+
+func OneInchPriceOracleByNetwork(network Network) common.Address {
+	switch network {
+	case EthereumNetwork:
+		return OneInchPriceOracleAddressEthereum()
+	case PolygonNetwork:
+		return OneInchPriceOracleAddressPolygon()
+	case ArbitrumNetwork:
+		return OneInchPriceOracleAddressArbitrum()
+	case BinanceSmartChainNetwork:
+		return OneInchPriceOracleAddressBSC()
+	case OptimismNetwork:
+		return OneInchPriceOracleAddressOptimism()
+	default:
+		return OneInchPriceOracleAddressEthereum()
+	}
+}
