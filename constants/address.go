@@ -14,6 +14,12 @@ const (
 	oneInchPriceOracleAddressArbitrum = "0x735247fb0a604c0adC6cab38ACE16D0DbA31295F"
 	oneInchPriceOracleAddressOptimism = "0x11DEE30E710B8d4a8630392781Cc3c0046365d4c"
 	oneInchPriceOracleAddressBSC      = "0xfbD61B037C325b959c0F6A7e69D8f37770C2c550"
+
+	usdtAddressInEthereum = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+	usdtAddressInPolygon  = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
+	usdtAddressInArbitrum = "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
+	usdtAddressInOptimism = "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58"
+	busdAddressInBSC      = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
 )
 
 const (
@@ -64,19 +70,12 @@ func OneInchPriceOracleAddressPolygon() common.Address {
 	return common.HexToAddress(oneInchPriceOralceAddressPolygon)
 }
 
-func OneInchPriceOracleByNetwork(network Network) common.Address {
-	switch network {
-	case EthereumNetwork:
-		return OneInchPriceOracleAddressEthereum()
-	case PolygonNetwork:
-		return OneInchPriceOracleAddressPolygon()
-	case ArbitrumNetwork:
-		return OneInchPriceOracleAddressArbitrum()
-	case BinanceSmartChainNetwork:
-		return OneInchPriceOracleAddressBSC()
-	case OptimismNetwork:
-		return OneInchPriceOracleAddressOptimism()
-	default:
-		return OneInchPriceOracleAddressEthereum()
-	}
-}
+func USDAddressInEthereum() common.Address { return common.HexToAddress(usdtAddressInEthereum) }
+
+func USDAddressInPolygon() common.Address { return common.HexToAddress(usdtAddressInPolygon) }
+
+func USDAddressInArbitrum() common.Address { return common.HexToAddress(usdtAddressInArbitrum) }
+
+func USDAddressInOptimism() common.Address { return common.HexToAddress(usdtAddressInOptimism) }
+
+func USDAddressInBSC() common.Address { return common.HexToAddress(busdAddressInBSC) }

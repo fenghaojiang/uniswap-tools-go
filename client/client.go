@@ -6,12 +6,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/fenghaojiang/uniswap-tools-go/constants"
 )
 
 type Clients struct {
 	ethClients []*wrapClient
 	// limit concurrency of rpc calls
 	limitChan chan struct{}
+	network   constants.Network
 
 	contractAbis *ContractABIs
 }
@@ -55,6 +57,10 @@ func NewClientsWithEndpoints(endpoints []string) (*Clients, error) {
 
 func (c *Clients) WithLimitRPC(limit int) {
 	c.limitChan = make(chan struct{}, limit)
+}
+
+func (c *Clients) WithNetwork(network constants.Network) {
+	c.network = network
 }
 
 func (c *Clients) Client() *wrapClient {
