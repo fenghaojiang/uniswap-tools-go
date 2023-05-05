@@ -38,3 +38,8 @@ const (
 	FeeGrowthGlobal0X128Method = "feeGrowthGlobal0X128"
 	FeeGrowthGlobal1X128Method = "feeGrowthGlobal1X128"
 )
+
+// 1Inch Oracle Method
+const (
+	GetRateToETHMethod = "getRateToEth"
+)

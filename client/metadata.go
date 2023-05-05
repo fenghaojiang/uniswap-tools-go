@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/erc20"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/multicall3"
+	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/oneinch_oracle"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/uniswapv3_factory"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/uniswapv3_nft_position_manager"
 	"github.com/fenghaojiang/uniswap-tools-go/onchain/generated-go/uniswapv3_pool"
@@ -17,6 +18,7 @@ type ContractABIs struct {
 	NftPositionManager *abi.ABI
 	Multicall          *abi.ABI
 	ERC20              *abi.ABI
+	Oracle             *abi.ABI
 }
 
 func NewContractAbis() *ContractABIs {
@@ -26,6 +28,7 @@ func NewContractAbis() *ContractABIs {
 	nftManager, _ := uniswapv3_nft_position_manager.Uniswapv3NftPositionManagerMetaData.GetAbi()
 	multilcall, _ := multicall3.Multicall3MetaData.GetAbi()
 	erc20, _ := erc20.Erc20MetaData.GetAbi()
+	oracle, _ := oneinch_oracle.OneinchOracleMetaData.GetAbi()
 
 	return &ContractABIs{
 		Factory:            factory,
@@ -34,5 +37,6 @@ func NewContractAbis() *ContractABIs {
 		NftPositionManager: nftManager,
 		Multicall:          multilcall,
 		ERC20:              erc20,
+		Oracle:             oracle,
 	}
 }
