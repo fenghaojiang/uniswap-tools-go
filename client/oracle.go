@@ -145,3 +145,93 @@ func (c *Clients) TokenPriceInUSD(ctx context.Context, tokenAddress common.Addre
 
 	return lo.ToPtr[decimal.Decimal](usdPerETH.Div(tokenPerETH)), nil
 }
+
+func (c *Clients) AggregatedTokenPriceInUSD(ctx context.Context, tokenAddresses []common.Address) ([]*decimal.Decimal, error) {
+	calls := make([]multicall3.Multicall3Call3, 0)
+	var expectLength int
+	for _, tokenAddress := range tokenAddresses {
+		_tokenCalldata, err := c.contractAbis.Oracle.Pack(constants.GetRateToETHMethod, tokenAddress, true)
+		if err != nil {
+			return nil, err
+		}
+		calls = append(calls, multicall3.Multicall3Call3{
+			Target:       c.OneInchOracleAddress(),
+			AllowFailure: false,
+			CallData:     _tokenCalldata,
+		})
+		_decimalsCallData, err := c.contractAbis.ERC20.Pack(constants.DecimalsMethod)
+		if err != nil {
+			return nil, err
+		}
+		calls = append(calls, multicall3.Multicall3Call3{
+			Target:       tokenAddress,
+			AllowFailure: false,
+			CallData:     _decimalsCallData,
+		})
+		expectLength += 2
+	}
+
+	_usdCallData, err := c.contractAbis.Oracle.Pack(constants.GetRateToETHMethod, c.USDAddress(), true)
+	if err != nil {
+		return nil, err
+	}
+
+	calls = append(calls, multicall3.Multicall3Call3{
+		Target:       c.OneInchOracleAddress(),
+		AllowFailure: false,
+		CallData:     _usdCallData,
+	})
+	expectLength += 1
+
+	results, err := c.AggregatedCalls(ctx, calls)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(results) != expectLength {
+		return nil, fmt.Errorf("aggregated price call result do not match the call number")
+	}
+
+	for i, result := range results {
+		if !result.Success {
+			return nil, fmt.Errorf("failed on aggregated price call on %d th call", i)
+		}
+	}
+
+	var usdPrice *big.Int
+	err = c.contractAbis.Oracle.UnpackIntoInterface(&usdPrice, constants.GetRateToETHMethod, results[expectLength-1].ReturnData)
+	if err != nil {
+		return nil, err
+	}
+	usdInETH := decimal.NewFromBigInt(usdPrice, -int32(constants.EthereumDecimals))
+
+	prices := make([]*decimal.Decimal, 0)
+	zero := decimal.NewFromInt(0)
+
+	for i := 0; i < expectLength-1; i += 2 {
+		var tokenPrice *big.Int
+		err := c.contractAbis.Oracle.UnpackIntoInterface(&tokenPrice, constants.GetRateToETHMethod, results[i].ReturnData)
+		if err != nil {
+			return nil, fmt.Errorf("failed on unpack oracle getRateToEth, %w", err)
+		}
+		var decimals uint8
+		err = c.contractAbis.ERC20.UnpackIntoInterface(&decimals, constants.DecimalsMethod, results[i+1].ReturnData)
+		if err != nil {
+			return nil, err
+		}
+		tokenInETH := decimal.NewFromBigInt(tokenPrice, -int32(constants.EthereumDecimals))
+		if tokenInETH.Equal(zero) {
+			prices = append(prices, lo.ToPtr[decimal.Decimal](zero))
+			continue
+		}
+
+		tokenPerETH := decimal.NewFromInt(1).Div(tokenInETH)
+		usdPerETH := decimal.NewFromInt(1).Div(usdInETH)
+
+		usdPerETH = usdPerETH.Shift(-int32(c.USDDecimals()))
+		tokenPerETH = tokenPerETH.Shift(-int32(decimals))
+
+		prices = append(prices, lo.ToPtr[decimal.Decimal](usdPerETH.Div(tokenPerETH)))
+	}
+	return prices, nil
+}
