@@ -205,7 +205,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 				resultPositions = append(resultPositions, model.Position{
 					TokenID: tokenIDs[_i],
 					Name: fmt.Sprintf("%s - %s, fee: %.2f",
-						tokenMap[token0Addr].Symbol, tokenMap[token1Addr].Symbol, float64(pools[i].Fee.Int64())/1000),
+						tokenMap[token0Addr].Symbol, tokenMap[token1Addr].Symbol, float64(pools[_i].Fee.Int64())/1000),
 					Status: constants.StatusClose,
 				})
 				mu.Unlock()
@@ -235,7 +235,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 				Status:  status,
 				TokenID: tokenIDs[_i],
 				Name: fmt.Sprintf("%s - %s, fee: %.2f",
-					tokenMap[token0Addr].Symbol, tokenMap[token1Addr].Symbol, float64(pools[i].Fee.Int64())/1000),
+					tokenMap[token0Addr].Symbol, tokenMap[token1Addr].Symbol, float64(pools[_i].Fee.Int64())/1000),
 				PriceRangeInToken0: [2]*decimal.Decimal{
 					lo.ToPtr[decimal.Decimal](priceRangeInToken0_0),
 					lo.ToPtr[decimal.Decimal](priceRangeInToken0_1),
