@@ -37,6 +37,9 @@ const (
 const (
 	FeeGrowthGlobal0X128Method = "feeGrowthGlobal0X128"
 	FeeGrowthGlobal1X128Method = "feeGrowthGlobal1X128"
+	Slot0Method                = "slot0"
+	TicksMethod                = "ticks"
+	LiquidityMethod            = "liquidity"
 )
 
 // 1Inch Oracle Method
