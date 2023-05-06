@@ -76,16 +76,17 @@ func TestOnFeeGrowthGlobal(t *testing.T) {
 	}
 
 	t.Run("test on pool batch request", func(t *testing.T) {
-		fee0, fee1, slot0, tickLower, tickUpper, err := polClis.Pool(ctx,
+		info, err := polClis.Pool(ctx,
 			common.HexToAddress("0xA374094527e1673A86dE625aa59517c5dE346d32"), new(big.Int).SetInt64(-276370), new(big.Int).SetInt64(-276350))
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		fmt.Printf("%+v\n", fee0)
-		fmt.Printf("%+v\n", fee1)
-		fmt.Printf("%+v\n", slot0)
-		fmt.Printf("%+v\n", tickLower)
-		fmt.Printf("%+v\n", tickUpper)
+		fmt.Printf("%+v\n", info.FeeGrowthGlobal0X128)
+		fmt.Printf("%+v\n", info.FeeGrowthGlobal1X128)
+		fmt.Printf("%+v\n", info.Slot0)
+		fmt.Printf("%+v\n", info.Liquidity)
+		fmt.Printf("%+v\n", info.TickLowerTicks)
+		fmt.Printf("%+v\n", info.TickUpperTicks)
 	})
 }

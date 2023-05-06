@@ -33,3 +33,12 @@ type Tick struct {
 	SecondsOutside                 uint32   `json:"secondsOutside"`
 	Initialized                    bool     `json:"initialized"`
 }
+
+type PoolAggregated struct {
+	FeeGrowthGlobal0X128 *big.Int
+	FeeGrowthGlobal1X128 *big.Int
+	Liquidity            *big.Int
+	Slot0                *Slot0
+	TickLowerTicks       *Tick
+	TickUpperTicks       *Tick
+}

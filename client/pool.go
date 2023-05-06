@@ -154,12 +154,12 @@ func (c *Clients) Slot0(ctx context.Context, address common.Address) (*model.Slo
 	return lo.ToPtr[model.Slot0](slot0), nil
 }
 
-func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLower, tickUpper *big.Int) (*big.Int, *big.Int, *model.Slot0, *model.Tick, *model.Tick, error) {
+func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLower, tickUpper *big.Int) (*model.PoolAggregated, error) {
 	calls := make([]multicall3.Multicall3Call3, 0)
 
 	_feeGlobal0X128Call, err := c.contractAbis.Pool.Pack(constants.FeeGrowthGlobal0X128Method)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 	calls = append(calls, multicall3.Multicall3Call3{
 		Target:       poolAddress,
@@ -169,7 +169,7 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 
 	_feeGlobal1X128Call, err := c.contractAbis.Pool.Pack(constants.FeeGrowthGlobal1X128Method)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 	calls = append(calls, multicall3.Multicall3Call3{
 		Target:       poolAddress,
@@ -179,7 +179,7 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 
 	_slotCall, err := c.contractAbis.Pool.Pack(constants.Slot0Method)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 	calls = append(calls, multicall3.Multicall3Call3{
 		Target:       poolAddress,
@@ -189,7 +189,7 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 
 	_tickLowerCall, err := c.contractAbis.Pool.Pack(constants.TicksMethod, tickLower)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 	calls = append(calls, multicall3.Multicall3Call3{
 		Target:       poolAddress,
@@ -199,7 +199,7 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 
 	_tickUpperCall, err := c.contractAbis.Pool.Pack(constants.TicksMethod, tickUpper)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 	calls = append(calls, multicall3.Multicall3Call3{
 		Target:       poolAddress,
@@ -207,24 +207,35 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 		CallData:     _tickUpperCall,
 	})
 
+	_liquidityCall, err := c.contractAbis.Pool.Pack(constants.LiquidityMethod)
+	if err != nil {
+		return nil, err
+	}
+	calls = append(calls, multicall3.Multicall3Call3{
+		Target:       poolAddress,
+		AllowFailure: false,
+		CallData:     _liquidityCall,
+	})
+
 	results, err := c.AggregatedCalls(ctx, calls)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 
-	if len(results) != 5 {
-		return nil, nil, nil, nil, nil, fmt.Errorf("call pool contract result do not match the request")
+	if len(results) != 6 {
+		return nil, fmt.Errorf("call pool contract result do not match the request")
 	}
 
 	for i, result := range results {
 		if !result.Success {
-			return nil, nil, nil, nil, nil, fmt.Errorf("failed to call pool contract on %d th call", i)
+			return nil, fmt.Errorf("failed to call pool contract on %d th call", i)
 		}
 	}
 
 	var feeGrowthGlobal0X128, feeGrowthGlobal1X128 *big.Int
 	var _slot0 model.Slot0
 	var _tickLower, _tickUpper model.Tick
+	var _liquidity *big.Int
 
 	var eg errgroup.Group
 
@@ -243,12 +254,20 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 	eg.Go(func() error {
 		return c.contractAbis.Pool.UnpackIntoInterface(&_tickUpper, constants.TicksMethod, results[4].ReturnData)
 	})
+	eg.Go(func() error {
+		return c.contractAbis.Pool.UnpackIntoInterface(&_liquidity, constants.LiquidityMethod, results[5].ReturnData)
+	})
 
 	err = eg.Wait()
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 
-	return feeGrowthGlobal0X128, feeGrowthGlobal1X128,
-		lo.ToPtr[model.Slot0](_slot0), lo.ToPtr[model.Tick](_tickLower), lo.ToPtr[model.Tick](_tickUpper), err
+	return &model.PoolAggregated{
+		FeeGrowthGlobal0X128: feeGrowthGlobal0X128,
+		FeeGrowthGlobal1X128: feeGrowthGlobal1X128,
+		Slot0:                lo.ToPtr[model.Slot0](_slot0),
+		TickLowerTicks:       lo.ToPtr[model.Tick](_tickLower),
+		TickUpperTicks:       lo.ToPtr[model.Tick](_tickUpper),
+	}, nil
 }
