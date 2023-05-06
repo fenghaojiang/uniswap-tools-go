@@ -5,7 +5,7 @@
 
 ## Goals  
 
-`uniswap-tools-go` aims to provide you a neat multi-chain solution for checking your holding positions and profit in `uniswap-v3`. You can request for anyone's uniswap-v3's portfolio using this toolkit in `Ethereum / Polygon / Arbitrum / Optimism`.  
+`uniswap-tools-go` aims to provide you a neat multi-chain solution for checking your holding positions and profit in `uniswap-v3`. You can request for anyone's uniswap-v3's portfolio using this toolkit in `Ethereum / Polygon / Arbitrum / Optimism / BSC`.  
 
 ## Non-goals 
 
