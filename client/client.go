@@ -55,8 +55,9 @@ func NewClientsWithEndpoints(endpoints []string) (*Clients, error) {
 	}, nil
 }
 
-func (c *Clients) WithLimitRPC(limit int) {
+func (c *Clients) WithLimitRPC(limit int) *Clients {
 	c.limitChan = make(chan struct{}, limit)
+	return c
 }
 
 func (c *Clients) WithNetwork(network constants.Network) *Clients {
