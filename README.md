@@ -68,7 +68,7 @@ func main() {
 
 
 ## Contribution
-Any suggestions, comments (including criticisms), comments and contributions are welcome.
+Any suggestions, comments (including criticisms) and contributions are welcome.
 
 
 ## Buy me a coffee 
