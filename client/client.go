@@ -55,10 +55,13 @@ func NewClientsWithEndpoints(endpoints []string) (*Clients, error) {
 	}, nil
 }
 
-func (c *Clients) WithLimitRPC(limit int) {
+func (c *Clients) WithLimitRPC(limit int) *Clients {
 	c.limitChan = make(chan struct{}, limit)
+	return c
 }
 
+// Choose your network before calling
+// By default it will choose Ethereum mainnet
 func (c *Clients) WithNetwork(network constants.Network) *Clients {
 	c.network = network
 	return c

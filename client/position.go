@@ -215,11 +215,40 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 				lockToken0Amount = utils.TickPriceToToken0Balance(tokenMap[token0Addr].Decimals,
 					_tPriceLower, _tPriceUpper, _position.Liquidity)
 
+				feeReward0Amount = utils.OutRangeFee(tokenMap[token0Addr].Decimals,
+					poolInfo.TickLowerTicks.FeeGrowthOutside0X128, poolInfo.TickUpperTicks.FeeGrowthOutside0X128,
+					_position.FeeGrowthInside0LastX128, _position.Liquidity)
+
+				feeReward1Amount = utils.OutRangeFee(tokenMap[token1Addr].Decimals,
+					poolInfo.TickLowerTicks.FeeGrowthOutside1X128, poolInfo.TickUpperTicks.FeeGrowthOutside1X128,
+					_position.FeeGrowthInside1LastX128, _position.Liquidity)
+
 			case constants.StatusOutOfUpRange:
 				lockToken0Amount = decimal.NewFromInt(0)
 				lockToken1Amount = utils.TickPriceToToken1Balance(tokenMap[token1Addr].Decimals,
 					_tPriceLower, _tPriceUpper, _position.Liquidity)
 
+				feeReward0Amount = utils.OutRangeFee(tokenMap[token0Addr].Decimals,
+					poolInfo.TickUpperTicks.FeeGrowthOutside0X128, poolInfo.TickLowerTicks.FeeGrowthOutside0X128,
+					_position.FeeGrowthInside0LastX128, _position.Liquidity)
+
+				feeReward1Amount = utils.OutRangeFee(tokenMap[token1Addr].Decimals,
+					poolInfo.TickUpperTicks.FeeGrowthOutside1X128, poolInfo.TickLowerTicks.FeeGrowthOutside1X128,
+					_position.FeeGrowthInside1LastX128, _position.Liquidity)
+
+			case constants.StatusInRange:
+				lockToken0Amount = utils.TickPriceToToken0Balance(tokenMap[token0Addr].Decimals,
+					_tPriceLower, _tPriceUpper, _position.Liquidity)
+				lockToken1Amount = utils.TickPriceToToken1Balance(tokenMap[token1Addr].Decimals,
+					_tPriceLower, _tPriceUpper, _position.Liquidity)
+
+				feeReward0Amount = utils.InRangeFee(tokenMap[token0Addr].Decimals,
+					poolInfo.FeeGrowthGlobal0X128, poolInfo.TickUpperTicks.FeeGrowthOutside0X128,
+					poolInfo.TickLowerTicks.FeeGrowthOutside0X128, _position.FeeGrowthInside0LastX128, _position.Liquidity)
+
+				feeReward1Amount = utils.InRangeFee(tokenMap[token1Addr].Decimals,
+					poolInfo.FeeGrowthGlobal1X128, poolInfo.TickUpperTicks.FeeGrowthOutside1X128,
+					poolInfo.TickLowerTicks.FeeGrowthOutside1X128, _position.FeeGrowthInside1LastX128, _position.Liquidity)
 			}
 
 			totalRewardValue := decimal.NewFromInt(1).Mul(feeReward0Amount).Mul(*tokenPrice[token0Addr]).Add(
@@ -256,8 +285,17 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 				LockedValue0InUSD: lo.ToPtr[decimal.Decimal](decimal.NewFromInt(1).Mul(lockToken0Amount).Mul(*tokenPrice[token0Addr])),
 				LockedValue1InUSD: lo.ToPtr[decimal.Decimal](decimal.NewFromInt(1).Mul(lockToken1Amount).Mul(*tokenPrice[token1Addr])),
 
+				FeeRewards0Amount: lo.ToPtr[decimal.Decimal](feeReward0Amount),
+				FeeRewards1Amount: lo.ToPtr[decimal.Decimal](feeReward1Amount),
+
+				FeeRewards0InUSD: lo.ToPtr[decimal.Decimal](decimal.NewFromInt(1).Mul(feeReward0Amount).Mul(*tokenPrice[token0Addr])),
+				FeeRewards1InUSD: lo.ToPtr[decimal.Decimal](decimal.NewFromInt(1).Mul(feeReward1Amount).Mul(*tokenPrice[token1Addr])),
+
 				TotalRewardsUSD: lo.ToPtr[decimal.Decimal](totalRewardValue),
 				TotalValueUSD:   lo.ToPtr[decimal.Decimal](totalValueInUSD),
+
+				Token0Price: tokenPrice[token0Addr],
+				Token1Price: tokenPrice[token1Addr],
 			})
 			mu.Unlock()
 
@@ -270,8 +308,6 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO reward calculation
 
 	return resultPositions, nil
 }

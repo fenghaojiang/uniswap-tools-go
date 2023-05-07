@@ -53,4 +53,7 @@ type Position struct {
 
 	TotalValueUSD   *decimal.Decimal `json:"tokenValueUSD"`
 	TotalRewardsUSD *decimal.Decimal `json:"totalRewardsUSD"`
+
+	Token0Price *decimal.Decimal `json:"token0Price"`
+	Token1Price *decimal.Decimal `json:"token1Price"`
 }
