@@ -269,5 +269,6 @@ func (c *Clients) Pool(ctx context.Context, poolAddress common.Address, tickLowe
 		Slot0:                lo.ToPtr[model.Slot0](_slot0),
 		TickLowerTicks:       lo.ToPtr[model.Tick](_tickLower),
 		TickUpperTicks:       lo.ToPtr[model.Tick](_tickUpper),
+		Liquidity:            _liquidity,
 	}, nil
 }

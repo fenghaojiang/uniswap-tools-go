@@ -14,7 +14,7 @@ const (
 func TickToPrice(tick *big.Int) decimal.Decimal {
 	_tick := decimal.NewFromBigInt(tick, 0)
 	_base := decimal.NewFromFloat(base)
-	return _base.Pow(_tick).Round(2)
+	return _base.Pow(_tick)
 }
 
 func AdjustedPrice(price decimal.Decimal, token0Decimals, token1Decimals uint8) decimal.Decimal {
@@ -25,7 +25,7 @@ func Invert(number decimal.Decimal) decimal.Decimal {
 	if number.IsZero() {
 		return decimal.NewFromInt(0)
 	}
-	return decimal.NewFromInt(1).Div(number).Round(2)
+	return decimal.NewFromInt(1).Div(number)
 }
 
 func TickPriceToToken0Balance(decimals uint8, tickPriceLower, tickPriceUpper decimal.Decimal, liquidity *big.Int) decimal.Decimal {

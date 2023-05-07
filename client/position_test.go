@@ -2,8 +2,11 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
+
+	"github.com/fenghaojiang/uniswap-tools-go/constants"
 )
 
 func TestOnAccountHoldings(t *testing.T) {
@@ -14,11 +17,13 @@ func TestOnAccountHoldings(t *testing.T) {
 		t.Fatal(err)
 	}
 	ctx := context.Background()
-	_, err = clis.AggregatedPosition(ctx, []*big.Int{
+
+	position, err := clis.WithNetwork(constants.PolygonNetwork).AggregatedPosition(ctx, []*big.Int{
 		new(big.Int).SetInt64(869899),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	fmt.Printf("%+v", position)
 }
