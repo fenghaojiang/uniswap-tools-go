@@ -60,6 +60,8 @@ func (c *Clients) WithLimitRPC(limit int) *Clients {
 	return c
 }
 
+// Choose your network before calling
+// By default it will choose Ethereum mainnet
 func (c *Clients) WithNetwork(network constants.Network) *Clients {
 	c.network = network
 	return c
