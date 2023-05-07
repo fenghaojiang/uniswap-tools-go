@@ -59,8 +59,9 @@ func (c *Clients) WithLimitRPC(limit int) {
 	c.limitChan = make(chan struct{}, limit)
 }
 
-func (c *Clients) WithNetwork(network constants.Network) {
+func (c *Clients) WithNetwork(network constants.Network) *Clients {
 	c.network = network
+	return c
 }
 
 func (c *Clients) Client() *wrapClient {

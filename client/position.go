@@ -26,7 +26,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 		}
 		callData, err := c.contractAbis.NftPositionManager.Pack(constants.NFTPositionManagerPositionsMethod, tokenID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to pack nft position manager, err: %w", err)
 		}
 		call.CallData = callData
 		calls = append(calls, call)
@@ -34,18 +34,17 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 
 	results, err := c.AggregatedCalls(ctx, calls)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to aggregated call, err: %w", err)
 	}
 
 	var positions []model.NFTPosition
-
 	for i, result := range results {
 		if !result.Success {
 			return nil, fmt.Errorf("failed to call uniswap nft manager position at %d th call", i)
 		}
 		var position model.NFTPosition
 		if err := c.contractAbis.NftPositionManager.UnpackIntoInterface(&position, constants.NFTPositionManagerPositionsMethod, result.ReturnData); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unpack nft position, err:%w", err)
 		}
 		positions = append(positions, position)
 	}
@@ -78,7 +77,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 			}()
 			token0, err = c.AggregatedERC20Token(ctx, _p.Token0)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to call aggregated erc20 token, err: %w", err)
 			}
 			mu.Lock()
 			tokenMap[strings.ToLower(_p.Token0.String())] = token0
@@ -86,7 +85,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 
 			token1, err = c.AggregatedERC20Token(ctx, _p.Token1)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to call aggregated erc20 token, err: %w", err)
 			}
 
 			mu.Lock()
@@ -97,16 +96,16 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 		})
 	}
 
-	_poolAddresses := make([]common.Address, 0)
+	_tokenAddresses := make([]common.Address, 0)
 	tokenPrice := make(map[string]*decimal.Decimal)
 	for _, pool := range pools {
-		_poolAddresses = append(_poolAddresses, pool.Pool)
+		_tokenAddresses = append(_tokenAddresses, pool.Token0)
+		_tokenAddresses = append(_tokenAddresses, pool.Token1)
 	}
 
 	if c.limitChan != nil {
 		c.limitChan <- struct{}{}
 	}
-
 	eg.Go(func() error {
 		defer func() {
 			if c.limitChan != nil {
@@ -116,7 +115,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 
 		pools, err = c.AggregatedGetPools(ctx, pools)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to aggregated get pools, err:%w", err)
 		}
 
 		return nil
@@ -132,12 +131,12 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 				<-c.limitChan
 			}
 		}()
-		prices, err := c.AggregatedTokenPriceInUSD(ctx, _poolAddresses)
+		prices, err := c.AggregatedTokenPriceInUSD(ctx, _tokenAddresses)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to aggregated get token price, err: %w", err)
 		}
 		for i, p := range prices {
-			tokenPrice[strings.ToLower(_poolAddresses[i].String())] = p
+			tokenPrice[strings.ToLower(_tokenAddresses[i].String())] = p
 		}
 		return nil
 	})
@@ -163,7 +162,7 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 			}()
 			poolInfo, err := c.Pool(ctx, pools[_i].Pool, _position.TickLower, _position.TickUpper)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to get pool, err: %w", err)
 			}
 
 			token0Addr := strings.ToLower(_position.Token0.String())
@@ -265,6 +264,11 @@ func (c *Clients) AggregatedPosition(ctx context.Context, tokenIDs []*big.Int) (
 			return nil
 		})
 
+	}
+
+	err = eg.Wait()
+	if err != nil {
+		return nil, err
 	}
 
 	// TODO reward calculation

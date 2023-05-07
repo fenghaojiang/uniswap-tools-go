@@ -217,7 +217,7 @@ func (c *Clients) AggregatedTokenPriceInUSD(ctx context.Context, tokenAddresses 
 		var decimals uint8
 		err = c.contractAbis.ERC20.UnpackIntoInterface(&decimals, constants.DecimalsMethod, results[i+1].ReturnData)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed on unpack erc20 decimals, %w", err)
 		}
 		tokenInETH := decimal.NewFromBigInt(tokenPrice, -int32(constants.EthereumDecimals))
 		if tokenInETH.Equal(zero) {

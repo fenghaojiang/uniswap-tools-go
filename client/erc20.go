@@ -42,10 +42,10 @@ func (c *Clients) AggregatedERC20Token(ctx context.Context, address common.Addre
 		AllowFailure: false,
 	}
 	decimalsCall.CallData, err = c.contractAbis.ERC20.Pack(constants.DecimalsMethod)
-
 	if err != nil {
 		return nil, err
 	}
+
 	calls = append(calls, decimalsCall)
 
 	results, err := c.AggregatedCalls(ctx, calls)
