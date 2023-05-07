@@ -67,5 +67,11 @@ func main() {
 - [Uniswap V3 Liquidity Math](https://atiselsts.github.io/pdfs/uniswap-v3-liquidity-math.pdf)  
 
 
+## Contribution
+Any suggestions, comments (including criticisms), comments and contributions are welcome.
+
+
+## Buy me a coffee 
+In Polygon is prefered: 0xc101c69340feb4d0c474bf8fc34f5266f3de8a15 
 
 
