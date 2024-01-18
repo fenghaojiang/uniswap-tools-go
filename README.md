@@ -71,7 +71,3 @@ func main() {
 Any suggestions, comments (including criticisms) and contributions are welcome.
 
 
-## Buy me a coffee 
-In Polygon is prefered: 0xc101c69340feb4d0c474bf8fc34f5266f3de8a15 
-
-
